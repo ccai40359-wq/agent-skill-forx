@@ -151,6 +151,63 @@ comments, so read the notes in this section and in `README.md`).
 | mcp | `mcp/server.mjs` | MCP stdio server exposing the same operations |
 | utils | `src/log.mjs`, `src/parse-count.mjs` | logging, locale-tolerant count parsing |
 
+## Anti-detection / anti-crawl design
+
+The short version: this tool does **not** spoof fingerprints. It takes the
+"real environment + human behaviour" route. Detection systems look for
+*anomalies*, not for automation as such, so every design decision here is about
+not producing an anomaly.
+
+### 1. Environment — use the real thing, do not disguise
+
+- **Real browser binary.** It launches the Microsoft Edge / Chrome you already
+  have installed. Not a Chromium stand-in, not a headless kernel. TLS
+  fingerprint, fonts, WebGL, extensions match your normal browsing.
+- **Real signed-in session.** Attach over CDP to the browser you are already
+  logged into, or launch an **isolated copy** of the profile
+  (`scripts/copy-profile.mjs`). The password is never stored and sign-in is
+  never simulated; the cookies are a real session.
+- **Your own residential IP.** Traffic leaves through your normal network
+  egress, never a datacenter or cloud-VM IP — the single most-flagged class.
+- **No fingerprint spoofing.** `navigator.webdriver` is not patched and no
+  stealth script is injected. Spoofing tends to contradict itself and get
+  detected; the goal is only to be *genuine*.
+- **No headless.** A real visible window, always.
+
+### 2. Behaviour — `src/humanize.mjs`
+
+- **Per-character typing.** `typeHuman` types at a randomised 30–100 ms per
+  character, x1.3 for CJK. It never uses a one-shot `insertText`, which is one
+  of the loudest automation signatures.
+- **Thinking pauses.** `thinkPause` inserts a randomised 2–5 s gap between
+  actions, occasionally longer, as if weighing the wording.
+- **Scroll warmup.** `scrollWarmup` performs 3–5 scrolls (200–900 px steps,
+  occasionally reversing) before acting.
+- **Mouse paths.** `moveHuman` approaches the target along a smoothstep path
+  in 8–20 steps with ±3 px jitter; `clickHuman` moves into place before
+  clicking. No teleport-click.
+- **Block-guard before every write.** `detectBlock` (`src/ops.mjs:41-55`)
+  reads the DOM for captcha / lock / rate-limit / action-blocked / signed-out
+  **before** acting, and refuses with exit code `2` instead of pressing on.
+
+### 3. What this does NOT do
+
+- No scheduling, batching, or quotas — that is the caller's job, and it is
+  deliberately left out so no built-in loop can hammer the account.
+- No fake fingerprints, no proxy rotation, no account farming, no auto-DM.
+- No concurrent fan-out: one command = one human-scale action.
+
+> **Risk is reduced, not removed.** Automated operation still violates X's
+> Terms of Service and can get an account limited or suspended. Respect X's
+> rules, your account's trust, and your local laws. You carry the risk.
+
+## Related
+
+- **[SocialMate](https://github.com/ccai40359-wq/socialmate)** — the desktop
+  media-agent that USES this skill: it reads trends, drafts in your voice, queues
+  for review, then drives the same logged-in browser to engage and grow. If you
+  want a product rather than a building block, start there.
+
 ## Limitations
 
 - Requires an existing signed-in browser session; it never logs in for you.
@@ -310,6 +367,49 @@ node scripts/copy-profile.mjs [outDir] [profileName]
 | cli | `src/cli.mjs` | `forx` 命令入口 |
 | mcp | `mcp/server.mjs` | 暴露同样操作的 MCP stdio 服务 |
 | utils | `src/log.mjs`、`src/parse-count.mjs` | 日志、多语言数字解析 |
+
+## 反爬 / 反检测设计
+
+> 结论先说：本工具**不做指纹伪造**，走的是「真实环境 + 真人行为」路线。
+> 检测系统看的是**异常**，不是「自动化」本身；所有设计都围绕「不产生异常」。
+
+### 1) 环境层：用真东西，不伪装
+
+- **真实浏览器二进制**：启动你本机已安装的 Edge / Chrome，不是 Chromium 替身、不是无头内核。
+  TLS 指纹、字体、WebGL、扩展都和你平时上网一致。
+- **真实登录会话**：通过 CDP attach 到你已经登录的浏览器，或启动 profile 的**隔离副本**
+  （`scripts/copy-profile.mjs`）。**不保存密码、不模拟登录**，Cookie 是真实会话。
+- **本机家用 IP**：走你自己的网络出口，**不是**数据中心 / 云服务器 IP
+  —— 这是最容易被判定的一类。
+- **不做指纹伪造**：不覆盖 `navigator.webdriver`、不注入 stealth 脚本。
+  伪造反而容易自相矛盾被识别；我们只保证「真」。
+- **零无头**：全程真实可见窗口。
+
+### 2) 行为层（`src/humanize.mjs`）
+
+- **逐字符打字**：`typeHuman` 按 30–100ms/字符随机输入，CJK 再 ×1.3。
+  **不用** `insertText` 一次性灌入（这是最响亮的自动化特征之一）。
+- **思考停顿**：`thinkPause` 在动作之间插入 2–5 秒随机停顿，偶尔更长，像在斟酌用词。
+- **预热滚动**：`scrollWarmup` 操作前先滚 3–5 次（步长 200–900，偶尔反向）。
+- **鼠标轨迹**：`moveHuman` 沿 smoothstep 缓动分 8–20 步逼近目标（带 ±3px 抖动），
+  `clickHuman` 先到位再点，**不是瞬移点击**。
+- **每次写入前先过护栏**：`detectBlock`（`src/ops.mjs:41-55`）在读 DOM 判断
+  验证码 / 账号锁定 / 限流 / 动作被拦 / 掉登录，命中就**拒绝执行**并返回退出码 `2`。
+
+### 3) 本工具**不**做的事
+
+- **不做**调度、批量、配额 —— 那是调用方 agent 的职责，故意不内置，避免自带循环把账号打爆。
+- **不做**指纹伪造、代理轮换、养号、自动私信。
+- **不做**并发扇出：一条命令 = 一个真人尺度的动作。
+
+> ⚠️ **风险只被降低，不能被消除。** 自动化操作依然违反 X 的服务条款，可能导致账号被限流或封禁。
+> 请遵守平台规则、爱惜你的账号权重与你当地的法律，风险自负。
+
+## 相关项目
+
+- **[SocialMate](https://github.com/ccai40359-wq/socialmate)** —— 用这个 skill 的
+  桌面端 media-agent：读热点、按你的语气写稿、进队列等你审核，然后驱动同一个登录态去
+  互动和涨粉。想要成品而不是零件，看那个。
 
 ## 局限
 

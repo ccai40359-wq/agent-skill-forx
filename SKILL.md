@@ -108,6 +108,10 @@ copy of the user's profile (copy it first with `scripts/copy-profile.mjs`);
   explicitly enabled (`safety.allowPolitics`, `safety.allowFinance`).
 - One tool/command = one human-scale action. No scheduling, no quotas, no
   auto-DM, no reply-scripts.
+- No fingerprint spoofing and no headless: a real browser, a real session, your
+  own IP, per-character typing and mouse paths (`src/humanize.mjs`). Detection
+  looks for anomalies, so the design is "real", not "disguised". See the
+  README's anti-detection section for the full model.
 - The "credential" is the user's own signed-in session; it never leaves the
   machine. Nothing is stored or logged except optional `FORX_LOG` output.
 - The browser is never closed when merely attached; only a browser this tool
