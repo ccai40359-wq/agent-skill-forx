@@ -10,7 +10,7 @@
 // Nothing here fakes a fingerprint; it drives the user's real session.
 import { appendLog } from './log.mjs';
 import { parseCountAny } from './parse-count.mjs';
-import { scrollWarmup, thinkPause, typeHuman, clickHuman, moveHuman, sleep } from './humanize.mjs';
+import { scrollWarmup, thinkPause, typeHuman, clickHuman, moveHuman, sleep, randInt } from './humanize.mjs';
 
 export const SEL = {
   composeEntry: '[data-testid="SideNav_NewTweet_Button"]',
@@ -359,8 +359,8 @@ export async function scroll(page, { rounds = 3, likeMinLikes = 0, maxLikes = 0 
         if (await likeBtn.isVisible().catch(() => false)) { await likeBtn.click().catch(() => {}); liked++; await sleep(1200); }
       }
     }
-    await page.mouse.wheel(0, 2400 + Math.floor(Math.random() * 800));
-    await page.waitForTimeout(1800 + Math.floor(Math.random() * 1600));
+    await page.mouse.wheel(0, randInt(2400, 3200));
+    await page.waitForTimeout(randInt(1800, 3400));
   }
   appendLog(`SCROLL done :: ${seen.length} tweets seen, ${liked} liked`);
   return { ok: true, seen, liked };
