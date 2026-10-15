@@ -11,6 +11,7 @@
     "./browser": "./src/browser.mjs"
   },
   "bin": {
+    "forx": "src/cli.mjs",
     "agent-skill-forx": "src/cli.mjs"
   },
   "files": [

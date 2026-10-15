@@ -7,6 +7,8 @@ reply, and post — driven through your own logged-in browser via CDP. The agent
 supplies judgement and copy; this package supplies the hands. Ships as an
 Agent Skill (`SKILL.md`) and an MCP server (`mcp/server.mjs`).
 
+<p align="center"><img src="docs/assets/social-preview.png" alt="agent-skill-forx" width="100%"></p>
+
 ## What it is
 
 - Drives the user's REAL signed-in X session (Edge/Chrome) over CDP: real
@@ -36,9 +38,13 @@ x.com.
 
 ```bash
 npm i
+npm link                      # puts the `forx` bin on your PATH
 node scripts/copy-profile.mjs   # browser must be CLOSED first
 forx verify --mode launch --profile profile
 ```
+
+Without `npm link`, every `forx` below also works as
+`node src/cli.mjs <command>`.
 
 - `copy-profile.mjs` copies your real profile into an ISOLATED working copy so
   the tool never disturbs your daily browser (`scripts/copy-profile.mjs`).
@@ -88,15 +94,15 @@ Tools (`mcp/server.mjs:38-65`):
 | `x_scroll_timeline` | `rounds?` (1-20), `likeMinLikes?` (>=0) | scroll like a person |
 | `x_like` | `tweetUrl` | like one tweet |
 | `x_follow` | `handle` | follow by @handle or profile URL |
-| `x_quote` | `tweetUrl`, `comment` | quote a tweet |
-| `x_reply` | `tweetUrl`, `text` | reply to a tweet |
-| `x_post` | `text` | publish an original post |
+| `x_quote` | `tweetUrl`, `comment`, `dryRun?` | quote a tweet (`dryRun` = prepare only) |
+| `x_reply` | `tweetUrl`, `text`, `dryRun?` | reply to a tweet (`dryRun` = prepare only) |
+| `x_post` | `text`, `dryRun?` | publish an original post (`dryRun` = prepare only) |
 | `x_read_tweet` | `tweetUrl` | read a tweet (read-only) |
 
 ## Config
 
 Resolution order (first wins): CLI flags > env vars (`FORX_*`) >
-`./forx.config.json` (`src/config.mjs:15-27`).
+`./forx.config.json` (`src/config.mjs:11-29`).
 
 | key | CLI flag | env var | file key | default |
 |-----|----------|---------|----------|---------|
@@ -108,7 +114,7 @@ Resolution order (first wins): CLI flags > env vars (`FORX_*`) >
 
 Modes: `attach` connects to a running CDP endpoint; `launch` starts an isolated
 copy of your profile; `auto` attaches if CDP is up, otherwise launches
-(`src/browser.mjs:166-192`). Copy the profile first:
+(`src/browser.mjs:124-146`). Copy the profile first:
 
 ```bash
 node scripts/copy-profile.mjs [outDir] [profileName]
@@ -120,7 +126,7 @@ Extra env: `FORX_LOG=<path>` appends a log file (`src/log.mjs:11`);
 (`scripts/copy-profile.mjs:12`).
 
 See `forx.config.example.json` for a full commented example (JSON has no
-comments, so read the notes in this section and in `README.md`).
+comments, so read the notes below and in `src/browser.mjs`).
 
 ## Safety
 
@@ -176,9 +182,10 @@ not producing an anomaly.
 
 ### 2. Behaviour — `src/humanize.mjs`
 
-- **Per-character typing.** `typeHuman` types at a randomised 30–100 ms per
-  character, x1.3 for CJK. It never uses a one-shot `insertText`, which is one
-  of the loudest automation signatures.
+- **Per-character typing.** `typeHuman` types key by key at a randomised
+  30–100 ms per character, x1.3 for CJK — never a one-shot paste. `insertText`
+  appears only as a fallback when the per-key path throws (`src/ops.mjs:110`,
+  `src/ops.mjs:294`).
 - **Thinking pauses.** `thinkPause` inserts a randomised 2–5 s gap between
   actions, occasionally longer, as if weighing the wording.
 - **Scroll warmup.** `scrollWarmup` performs 3–5 scrolls (200–900 px steps,
@@ -202,6 +209,12 @@ not producing an anomaly.
 > rules, your account's trust, and your local laws. You carry the risk.
 
 ## Related
+
+These stills are from the SocialMate promo video that demos this skill in use:
+
+| skill scene | end card |
+|---|---|
+| ![skill scene](docs/assets/promo-skill.png) | ![SocialMate + agent-skill-forx](docs/assets/promo-endcard.png) |
 
 - **[SocialMate](https://github.com/ccai40359-wq/socialmate)** — the desktop
   media-agent that USES this skill: it reads trends, drafts in your voice, queues
@@ -258,9 +271,13 @@ MIT. See `LICENSE`.
 
 ```bash
 npm i
+npm link                      # 把 `forx` 挂到 PATH 上
 node scripts/copy-profile.mjs   # 复制前必须先完全关闭浏览器
 forx verify --mode launch --profile profile
 ```
+
+如果不想 `npm link`，下面所有 `forx <命令>` 都可以用
+`node src/cli.mjs <命令>` 等价代替。
 
 - `copy-profile.mjs` 把你的真实配置复制成 ISOLATED 工作副本，绝不打扰日常
   使用的浏览器（`scripts/copy-profile.mjs`）。
@@ -310,15 +327,15 @@ npm run mcp                        # stdio 传输
 | `x_scroll_timeline` | `rounds?` (1-20)、`likeMinLikes?` (>=0) | 像人一样滚动 |
 | `x_like` | `tweetUrl` | 点赞一条 |
 | `x_follow` | `handle` | 按 @handle 或主页 URL 关注 |
-| `x_quote` | `tweetUrl`、`comment` | 引用推文 |
-| `x_reply` | `tweetUrl`、`text` | 回复推文 |
-| `x_post` | `text` | 发布原创推文 |
+| `x_quote` | `tweetUrl`、`comment`、`dryRun?` | 引用推文（`dryRun` 只准备不发布） |
+| `x_reply` | `tweetUrl`、`text`、`dryRun?` | 回复推文（`dryRun` 只准备不发布） |
+| `x_post` | `text`、`dryRun?` | 发布原创推文（`dryRun` 只准备不发布） |
 | `x_read_tweet` | `tweetUrl` | 只读推文 |
 
 ## 配置
 
 解析顺序（先到先得）：CLI 参数 > 环境变量（`FORX_*`）> `./forx.config.json`
-（`src/config.mjs:15-27`）。
+（`src/config.mjs:11-29`）。
 
 | 键 | CLI 参数 | 环境变量 | 文件键 | 默认 |
 |-----|----------|----------|--------|------|
@@ -329,7 +346,7 @@ npm run mcp                        # stdio 传输
 | profile dir | `--profile` | `FORX_PROFILE` | `profileDir` | `./profile` |
 
 模式：`attach` 连接已运行中的 CDP 端口；`launch` 启动隔离的配置副本；
-`auto` 端口有 CDP 就 attach，否则 launch（`src/browser.mjs:166-192`）。先
+`auto` 端口有 CDP 就 attach，否则 launch（`src/browser.mjs:124-146`）。先
 复制配置：
 
 ```bash
@@ -388,7 +405,8 @@ node scripts/copy-profile.mjs [outDir] [profileName]
 ### 2) 行为层（`src/humanize.mjs`）
 
 - **逐字符打字**：`typeHuman` 按 30–100ms/字符随机输入，CJK 再 ×1.3。
-  **不用** `insertText` 一次性灌入（这是最响亮的自动化特征之一）。
+  正常路径**不用** `insertText` 一次性灌入（这是最响亮的自动化特征之一）；
+  仅在逐键输入抛错时才回退到 `insertText`（`src/ops.mjs:110`、`src/ops.mjs:294`）。
 - **思考停顿**：`thinkPause` 在动作之间插入 2–5 秒随机停顿，偶尔更长，像在斟酌用词。
 - **预热滚动**：`scrollWarmup` 操作前先滚 3–5 次（步长 200–900，偶尔反向）。
 - **鼠标轨迹**：`moveHuman` 沿 smoothstep 缓动分 8–20 步逼近目标（带 ±3px 抖动），

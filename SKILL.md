@@ -30,7 +30,8 @@ agent supplies judgement and copy; this skill supplies the hands.
 
 - A browser (Edge or Chrome) already signed in to x.com.
 - Node.js >= 20 (see `engines` in `package.json`).
-- Dependencies installed: `npm i`.
+- Dependencies installed: `npm i`, then `npm link` to put the `forx` bin
+  on your PATH (or call `node src/cli.mjs <command>` instead).
 
 ## CLI surface
 
@@ -76,15 +77,15 @@ Tools (registered at `mcp/server.mjs:38-65`):
 | `x_scroll_timeline` | `rounds?` (1-20), `likeMinLikes?` (>=0) | human-like scroll, optional likes |
 | `x_like`          | `tweetUrl`                | like one tweet                     |
 | `x_follow`        | `handle`                  | follow by @handle or profile URL   |
-| `x_quote`         | `tweetUrl`, `comment`     | quote a tweet                      |
-| `x_reply`         | `tweetUrl`, `text`        | reply to a tweet                   |
-| `x_post`          | `text`                    | publish an original post           |
+| `x_quote`         | `tweetUrl`, `comment`, `dryRun?` | quote a tweet (`dryRun` = prepare only) |
+| `x_reply`         | `tweetUrl`, `text`, `dryRun?` | reply to a tweet (`dryRun` = prepare only) |
+| `x_post`          | `text`, `dryRun?`         | publish an original post (`dryRun` = prepare only) |
 | `x_read_tweet`    | `tweetUrl`                | read a tweet, read-only            |
 
 ## Configuration
 
 Resolution order (first wins): CLI flags > env vars (`FORX_*`) >
-`./forx.config.json` (`src/config.mjs:7-27`).
+`./forx.config.json` (`src/config.mjs:11-29`).
 
 | key           | CLI flag      | env var         | file key      | default            |
 |---------------|---------------|-----------------|---------------|--------------------|
@@ -96,7 +97,7 @@ Resolution order (first wins): CLI flags > env vars (`FORX_*`) >
 
 `attach` requires a live CDP endpoint on `port`; `launch` starts an ISOLATED
 copy of the user's profile (copy it first with `scripts/copy-profile.mjs`);
-`auto` attaches if CDP is up, otherwise launches (`src/browser.mjs:166-192`).
+`auto` attaches if CDP is up, otherwise launches (`src/browser.mjs:124-146`).
 
 ## Safety model
 

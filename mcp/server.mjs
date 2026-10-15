@@ -50,16 +50,16 @@ mcp.tool('x_follow', 'Follow an account by @handle or profile URL.',
   { handle: z.string() },
   async ({ handle }) => { try { return ok(await X.follow(await page(), handle)); } catch (e) { return err(e); } });
 
-mcp.tool('x_quote', 'Quote a tweet with your own comment.',
-  { tweetUrl: z.string(), comment: z.string() },
-  async ({ tweetUrl, comment }) => { try { return ok(await X.quote(await page(), tweetUrl, comment)); } catch (e) { return err(e); } });
+mcp.tool('x_quote', 'Quote a tweet with your own comment. Set dryRun to prepare without publishing.',
+  { tweetUrl: z.string(), comment: z.string(), dryRun: z.boolean().optional() },
+  async ({ tweetUrl, comment, dryRun = false }) => { try { return ok(await X.quote(await page(), tweetUrl, comment, { dryRun })); } catch (e) { return err(e); } });
 
-mcp.tool('x_reply', 'Reply to a tweet.',
-  { tweetUrl: z.string(), text: z.string() },
-  async ({ tweetUrl, text }) => { try { return ok(await X.reply(await page(), tweetUrl, text)); } catch (e) { return err(e); } });
+mcp.tool('x_reply', 'Reply to a tweet. Set dryRun to prepare without publishing.',
+  { tweetUrl: z.string(), text: z.string(), dryRun: z.boolean().optional() },
+  async ({ tweetUrl, text, dryRun = false }) => { try { return ok(await X.reply(await page(), tweetUrl, text, { dryRun })); } catch (e) { return err(e); } });
 
-mcp.tool('x_post', 'Publish a new original post.', { text: z.string() },
-  async ({ text }) => { try { return ok(await X.post(await page(), text)); } catch (e) { return err(e); } });
+mcp.tool('x_post', 'Publish a new original post. Set dryRun to fill the composer and prove it is ready without publishing.', { text: z.string(), dryRun: z.boolean().optional() },
+  async ({ text, dryRun = false }) => { try { return ok(await X.post(await page(), text, { dryRun })); } catch (e) { return err(e); } });
 
 mcp.tool('x_read_tweet', 'Read a tweet (author, text, metrics) without changing anything.', { tweetUrl: z.string() },
   async ({ tweetUrl }) => { try { return ok(await X.getTweet(await page(), tweetUrl)); } catch (e) { return err(e); } });

@@ -8,8 +8,8 @@
 import { randomInt } from 'node:crypto';
 
 // crypto random, not Math.random: the schedule should not be reproducible.
-function rand(a, b) { return Math.random() * (b - a) + a; }
-function randInt(a, b) { return Math.floor(rand(a, b + 1)); }
+function rand(a, b) { return (randomInt(0, 2 ** 32) / 2 ** 32) * (b - a) + a; }
+function randInt(a, b) { return randomInt(a, b + 1); }
 export function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 export const DEFAULTS = {
@@ -46,7 +46,7 @@ export async function typeHuman(page, locator, text, opts = {}) {
     const isCJK = ch.codePointAt(0) >= 0x1100;
     let d = rand(min, max);
     if (isCJK) d *= p.cjkMultiplier;
-    if (Math.random() < 0.06) d += rand(300, 1200);
+    if (rand(0, 1) < 0.06) d += rand(300, 1200);
     await sleep(d);
   }
   return Date.now() - started;
@@ -63,7 +63,7 @@ export async function scrollWarmup(page, opts = {}) {
   const p = pickTimingProfile(opts.cfg || {});
   const rolls = opts.rolls ?? randInt(p.warmupScrollsMin, p.warmupScrollsMax);
   for (let i = 0; i < rolls; i++) {
-    const dy = rand(p.scrollStepMin, p.scrollStepMax) * (Math.random() < 0.25 ? -1 : 1);
+    const dy = rand(p.scrollStepMin, p.scrollStepMax) * (rand(0, 1) < 0.25 ? -1 : 1);
     await page.mouse.wheel(0, dy).catch(() => {});
     await sleep(rand(150, 600));
   }
