@@ -1,0 +1,27 @@
+{
+  "session": {
+    "mode": "auto",
+    "port": 9222,
+    "browser": "auto",
+    "exe": null,
+    "profileDir": "./profile"
+  },
+  "humanize": {
+    "charDelayMin": 30,
+    "charDelayMax": 100,
+    "cjkMultiplier": 1.3,
+    "pauseMin": 2000,
+    "pauseMax": 5000,
+    "warmupScrollsMin": 3,
+    "warmupScrollsMax": 5,
+    "scrollStepMin": 200,
+    "scrollStepMax": 900,
+    "moveStepsMin": 8,
+    "moveStepsMax": 20,
+    "jitterPx": 3
+  },
+  "safety": {
+    "allowPolitics": false,
+    "allowFinance": false
+  }
+}

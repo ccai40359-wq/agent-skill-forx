@@ -1,0 +1,8 @@
+node_modules/
+profile/
+*.log
+forx.config.json
+.env
+renders/
+*.tmp
+TS_*

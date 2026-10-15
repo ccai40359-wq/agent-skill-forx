@@ -1,0 +1,37 @@
+{
+  "name": "agent-skill-forx",
+  "version": "0.1.0",
+  "description": "Human-like X (Twitter) operations for AI agents - like, scroll, follow, quote, reply, and post, driven through your own logged-in browser. Ships as an Agent Skill and an MCP server.",
+  "type": "module",
+  "license": "MIT",
+  "main": "src/ops.mjs",
+  "exports": {
+    ".": "./src/ops.mjs",
+    "./humanize": "./src/humanize.mjs",
+    "./browser": "./src/browser.mjs"
+  },
+  "bin": {
+    "agent-skill-forx": "src/cli.mjs"
+  },
+  "files": [
+    "src",
+    "mcp",
+    "SKILL.md"
+  ],
+  "scripts": {
+    "test": "node scripts/test-humanize.mjs && node scripts/test-guards.mjs",
+    "test:humanize": "node scripts/test-humanize.mjs",
+    "test:guards": "node scripts/test-guards.mjs",
+    "mcp": "node mcp/server.mjs",
+    "smoke": "node scripts/smoke-live.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.53.0"
+  },
+  "optionalDependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
